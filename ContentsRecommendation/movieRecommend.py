@@ -1,5 +1,6 @@
 import os
 import requests
+import random  # 랜덤 모듈 추가
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -11,7 +12,13 @@ def fetch_movie_recommendation(emotion):
         'Accept': 'application/json'
     }
 
-    genre_map = {'기쁨': '35'}  # Example: '기쁨' corresponds to Comedy genre
+    genre_map = {
+        '기쁨': '35',
+        '분노': '28',
+        '슬픔': '18',
+        '상처': '10751',
+        '불안': '12'
+    }
     
     url = (
         "https://api.themoviedb.org/3/discover/movie?"
@@ -25,10 +32,11 @@ def fetch_movie_recommendation(emotion):
     data = response.json()
 
     if 'results' in data and data['results']:
-        first_result = data['results'][0]
-        
+        # 랜덤하게 하나의 영화 선택
+        random_movie = random.choice(data['results'])
+
         # 감독 정보를 가져오기 위한 추가적인 요청
-        movie_id = first_result['id']
+        movie_id = random_movie['id']
         credits_url = f"https://api.themoviedb.org/3/movie/{movie_id}/credits"
         credits_response = requests.get(credits_url, headers=headers)
         credits_data = credits_response.json()
@@ -36,24 +44,19 @@ def fetch_movie_recommendation(emotion):
         # 감독 이름 추출
         directors = [crew['name'] for crew in credits_data['crew'] if crew['job'] == 'Director']
 
-
         # Fetching genres list
         genre_name_url = "https://api.themoviedb.org/3/genre/movie/list?api_key=YOUR_API_KEY&language=ko-KR"
         genre_response = requests.get(genre_name_url, headers=headers)
         genre_data = genre_response.json()
 
-        if 'genres' in genre_data:
-            genres = {genre['id']: genre['name'] for genre in genre_data['genres']}
-            genre_ids = first_result.get('genre_ids', [])
-            first_genre_name = genres.get(genre_ids[0], "No genre found") if genre_ids else "No genre provided"
-        else:
-            print("No 'genres' key in genre_data:", genre_data)  # Debug output
-            first_genre_name = "No genre provided"
+        genres = {genre['id']: genre['name'] for genre in genre_data['genres']} if 'genres' in genre_data else {}
+        genre_ids = random_movie.get('genre_ids', [])
+        first_genre_name = ', '.join(genres.get(g_id, "No genre found") for g_id in genre_ids)
 
         custom_data = {
-            "name": first_result.get('title', 'No title provided'),
-            "content": first_result.get('overview', 'No description provided'),
-            "image": f"https://image.tmdb.org/t/p/w500{first_result.get('poster_path', '')}",
+            "name": random_movie.get('title', 'No title provided'),
+            "content": random_movie.get('overview', 'No description provided'),
+            "image": f"https://image.tmdb.org/t/p/w500{random_movie.get('poster_path', '')}",
             "genre": first_genre_name,
             "director": ', '.join(directors) if directors else 'No director found'
         }
@@ -64,6 +67,6 @@ def fetch_movie_recommendation(emotion):
         return "No results found"
 
 # Example usage
-emotion = '기쁨'
+emotion = '분노'
 movie_data = fetch_movie_recommendation(emotion)
 print(movie_data)
