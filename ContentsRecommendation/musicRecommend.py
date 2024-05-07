@@ -1,7 +1,11 @@
+import os
 import requests
+from dotenv import load_dotenv
 
-client_id = '***REMOVED***'
-client_secret = '***REMOVED***'
+load_dotenv()  # 환경 변수 불러오기
+
+client_id = os.getenv('SPOTIFY_CLIENT_ID')
+client_secret = os.getenv('SPOTIFY_CLIENT_SECRET')
 
 # Spotify API 인증을 위해 액세스 토큰을 얻는 함수
 def get_spotify_token(client_id, client_secret):

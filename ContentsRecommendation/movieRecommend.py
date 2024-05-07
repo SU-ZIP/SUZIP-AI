@@ -1,7 +1,11 @@
+import os
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+token = os.getenv('MOVIE_API_TOKEN')
 
 def fetch_movie_recommendation(emotion):
-    token = "***REMOVED***"
     headers = {
         'Authorization': f'Bearer {token}',
         'Accept': 'application/json'
