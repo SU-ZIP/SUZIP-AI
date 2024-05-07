@@ -1,5 +1,6 @@
-import os
 import requests
+import random
+import os
 from dotenv import load_dotenv
 
 load_dotenv()  # 환경 변수 불러오기
@@ -7,65 +8,62 @@ load_dotenv()  # 환경 변수 불러오기
 client_id = os.getenv('SPOTIFY_CLIENT_ID')
 client_secret = os.getenv('SPOTIFY_CLIENT_SECRET')
 
-# Spotify API 인증을 위해 액세스 토큰을 얻는 함수
-def get_spotify_token(client_id, client_secret):
-    auth_url = "https://accounts.spotify.com/api/token"
-    auth_response = requests.post(auth_url, {
+def get_spotify_token():
+    url = "https://accounts.spotify.com/api/token"
+    response = requests.post(url, {
         'grant_type': 'client_credentials',
         'client_id': client_id,
-        'client_secret': client_secret,
+        'client_secret': client_secret
     })
-    auth_response_data = auth_response.json()
-    return auth_response_data['access_token']
+    return response.json()['access_token']
 
-# 감정에 따른 플레이리스트 검색 (예시)
-def fetch_music_recommendation(emotion, token):
-    playlist_map = {
-        '기쁨': 'Happy Hits',
-        '슬픔': 'Sad Songs',
-        '분노': 'Rock Hard',
-        '두려움': 'Relax'
+def fetch_music_recommendation(emotion):
+    genre_map = {
+        '기쁨': ['happy', 'joy', 'exciting K-POP'],
+        '분노': ['angry', 'hard', 'upset'],
+        '슬픔': ['sad', 'gloomy', 'dark K-POP'],
+        '상처': ['hurt', 'sick'],
+        '불안': ['anxious']
     }
 
-    # 플레이리스트 이름으로 Spotify에서 검색
-    search_query = playlist_map.get(emotion, 'Pop')
-    url = f"https://api.spotify.com/v1/search?q={search_query}&type=playlist&limit=1"
-    headers = {
-        'Authorization': f'Bearer {token}',
-        'Content-Type': 'application/json',
-    }
+    token = get_spotify_token()
+    headers = {'Authorization': f'Bearer {token}'}
+
+    # 감정에 맞는 키워드로 플레이리스트 검색, 배열 내 요소를 OR 연산자로 결합
+    keywords = genre_map.get(emotion, ['music'])
+    query = " OR ".join(keywords)
+    url = f"https://api.spotify.com/v1/search?q={query}&type=playlist&limit=1"
     response = requests.get(url, headers=headers)
-    data = response.json()
+    playlists = response.json().get('playlists', {}).get('items', [])
+    
+    if not playlists:
+        return "No playlists found."
 
-    playlist_id = data['playlists']['items'][0]['id']
-    playlist_tracks_url = f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks?limit=1"
-    tracks_response = requests.get(playlist_tracks_url, headers=headers)
-    tracks_data = tracks_response.json()
+    # 첫 번째 플레이리스트 선택
+    playlist_id = playlists[0]['id']
+    
+    # 플레이리스트의 트랙 가져오기
+    tracks_url = f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks"
+    tracks_response = requests.get(tracks_url, headers=headers)
+    tracks = tracks_response.json().get('items', [])
+    
+    if not tracks:
+        return "No tracks found in the playlist."
+    
+    # 랜덤 트랙 선택
+    track = random.choice(tracks)['track']
+    artists_names = ', '.join(artist['name'] for artist in track['artists'])
 
-    first_track = tracks_data['items'][0]['track']
-
-    # Getting genres from the artist's object (requires additional calls for full implementation)
-    artist_id = first_track['artists'][0]['id']
-    artist_url = f"https://api.spotify.com/v1/artists/{artist_id}"
-    artist_response = requests.get(artist_url, headers=headers)
-    artist_data = artist_response.json()
-    genres = artist_data.get('genres', [])
-
-    # 필요한 정보만을 추출하여 새로운 JSON 객체 구성
     custom_data = {
-        "name": first_track['name'],
-        "content": first_track['album']['name'],  # 앨범 이름을 '설명'으로 사용
-        "image": first_track['album']['images'][0]['url'],  # 첫 번째 이미지 URL
-        "genre": ', '.join(genres),  # 아티스트 기반 장르 정보
-        "artist": ', '.join([artist['name'] for artist in first_track['artists']])  # 아티스트 이름 목록
+        "name": track['name'],
+        "image": track['album']['images'][0]['url'],
+        "artist": artists_names
     }
 
     return custom_data
 
-# 클라이언트 ID와 시크릿을 사용하여 토큰 가져오기
-token = get_spotify_token(client_id, client_secret)
-
+# 감정 입력 및 음악 추천 실행
 emotion = '기쁨'
-music_data = fetch_music_recommendation(emotion, token)
+recommended_track = fetch_music_recommendation(emotion)
 
-print(music_data)
+print(recommended_track)
