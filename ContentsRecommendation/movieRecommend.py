@@ -67,6 +67,6 @@ def fetch_movie_recommendation(emotion):
         return "No results found"
 
 # Example usage
-emotion = '분노'
+emotion = '상처'
 movie_data = fetch_movie_recommendation(emotion)
 print(movie_data)
