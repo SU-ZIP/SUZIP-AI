@@ -1,6 +1,12 @@
+import os
 import requests
+import random
+from dotenv import load_dotenv
 
-#Google Books API에 요청을 보내는 코드
+load_dotenv()
+token = os.getenv('BOOK_API_TOKEN')
+
+#국립중앙도서관 API 사용
 def fetch_book_recommendation(emotion):
     topic_map = {
         '기쁨': 'humor',
@@ -9,22 +15,26 @@ def fetch_book_recommendation(emotion):
         '두려움': 'self help'
     }
 
-    # Google Books API 사용
     query = topic_map.get(emotion, 'fiction')  # 주제 매핑 또는 기본값
-    url = f"https://www.googleapis.com/books/v1/volumes?q=subject:{query}"
+    url = f"https://www.nl.go.kr/seoji/SearchApi.do?cert_key={token}&result_style=json&page_no=1&page_size=10&start_publish_date=20220509&end_publish_date=20220509"
     response = requests.get(url)
     data = response.json()
 
-    # 첫 번째 책 결과만 추출
-    first_result = data['items'][0]['volumeInfo']
+    # 유효한 결과만 추출
+    valid_books = [book for book in data.get('docs', []) if book.get('TITLE_URL')]
 
-    # 필요한 정보만을 추출하여 새로운 JSON 객체 구성
+    if not valid_books:
+        return "No valid books found."
+
+    # 랜덤하게 하나의 유효한 결과 선택
+    selected_book = random.choice(valid_books)
+
     custom_data = {
-        "name": first_result.get('title', 'No title provided'),
-        "content": first_result.get('description', 'No description provided'),
-        "image": first_result.get('imageLinks', {}).get('thumbnail', 'No image provided'),
-        "genre": ', '.join(first_result.get('categories', ['No genre provided'])),  # 장르 배열
-        "author": ', '.join(first_result.get('authors', ['No author provided']))  # 저자 배열
+        "name": selected_book.get('TITLE', 'No title provided'),
+        "content": selected_book.get('BOOK_INTRODUCTION_URL', 'No description provided'),
+        "image": selected_book.get('TITLE_URL', 'No image provided'),
+        "genre": selected_book.get('SUBJECT', 'No genre provided'),
+        "author": selected_book.get('AUTHOR', 'No author provided')
     }
 
     return custom_data
@@ -32,5 +42,4 @@ def fetch_book_recommendation(emotion):
 # 사용 예
 emotion = '기쁨'
 book = fetch_book_recommendation(emotion)
-
 print(f"책 추천: {book}")
