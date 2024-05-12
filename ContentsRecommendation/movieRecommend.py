@@ -65,8 +65,3 @@ def fetch_movie_recommendation(emotion):
     else:
         print("No 'results' key or empty results in data:", data)  # Debug output
         return "No results found"
-
-# Example usage
-emotion = '상처'
-movie_data = fetch_movie_recommendation(emotion)
-print(movie_data)

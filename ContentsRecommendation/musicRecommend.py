@@ -69,10 +69,3 @@ def fetch_music_recommendation(emotion):
 
 
     return custom_data
-
-
-# 감정 입력 및 음악 추천 실행
-emotion = '기쁨'
-recommended_track = fetch_music_recommendation(emotion)
-
-print(recommended_track)

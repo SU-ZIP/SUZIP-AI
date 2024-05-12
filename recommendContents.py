@@ -2,9 +2,9 @@ import json
 from ContentsRecommendation import movieRecommend, musicRecommend, bookRecommend
 
 def recommend_contents(emotion):
-    movie = movieRecommend.recommend_movie(emotion)
-    music = musicRecommend.recommend_music(emotion)
-    book = bookRecommend.recommend_book()
+    movie = movieRecommend.fetch_movie_recommendation(emotion)
+    music = musicRecommend.fetch_music_recommendation(emotion)
+    book = bookRecommend.fetch_book_recommendation()
     
     recommendations = {
         "movie": movie,

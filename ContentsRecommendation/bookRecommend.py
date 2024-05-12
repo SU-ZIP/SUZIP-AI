@@ -53,8 +53,3 @@ def fetch_book_recommendation(attempt=1, max_attempts=5):
             return fetch_book_recommendation(attempt + 1, max_attempts)
         else:
             return "No valid books found after multiple attempts."
-
-
-# 사용 예
-book = fetch_book_recommendation()
-print(f"책 추천: {book}")
