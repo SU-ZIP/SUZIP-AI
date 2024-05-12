@@ -1,6 +1,6 @@
 import os
 import requests
-import random  # 랜덤 모듈 추가
+import random
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -32,16 +32,12 @@ def fetch_movie_recommendation(emotion):
     data = response.json()
 
     if 'results' in data and data['results']:
-        # 랜덤하게 하나의 영화 선택
         random_movie = random.choice(data['results'])
-
-        # 감독 정보를 가져오기 위한 추가적인 요청
         movie_id = random_movie['id']
         credits_url = f"https://api.themoviedb.org/3/movie/{movie_id}/credits"
         credits_response = requests.get(credits_url, headers=headers)
         credits_data = credits_response.json()
 
-        # 감독 이름 추출
         directors = [crew['name'] for crew in credits_data['crew'] if crew['job'] == 'Director']
 
         # Fetching genres list
@@ -49,9 +45,13 @@ def fetch_movie_recommendation(emotion):
         genre_response = requests.get(genre_name_url, headers=headers)
         genre_data = genre_response.json()
 
-        genres = {genre['id']: genre['name'] for genre in genre_data['genres']} if 'genres' in genre_data else {}
+        if 'genres' in genre_data:
+            genres = {genre['id']: genre['name'] for genre in genre_data['genres']}
+        else:
+            genres = {}
+
         genre_ids = random_movie.get('genre_ids', [])
-        first_genre_name = ', '.join(genres.get(g_id, "No genre found") for g_id in genre_ids)
+        first_genre_name = genres.get(genre_ids[0], "No genre found") if genre_ids else "No genre provided"
 
         custom_data = {
             "name": random_movie.get('title', 'No title provided'),
