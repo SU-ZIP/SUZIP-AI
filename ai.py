@@ -15,6 +15,7 @@ import numpy as np
 
 import json
 from ContentsRecommendation import movieRecommend, musicRecommend, bookRecommend
+from gpt import generate_sentence
 
 app = FastAPI()
 
@@ -135,9 +136,12 @@ async def predict_sentiment(item: Item):
         emotion_result = predict(item.sentence)
         recommendations_json = recommend_contents(emotion_result)
         content_recommendation = json.loads(recommendations_json)  # JSON 문자열을 딕셔너리로 변환
+        sentence = generate_sentence(emotion_result)
+
         return {
             "emotion": emotion_result,
-            "recommendations": content_recommendation
+            "recommendations": content_recommendation,
+            "sentence": sentence
         }
 
     except Exception as e:
