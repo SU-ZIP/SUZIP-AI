@@ -10,7 +10,7 @@ openai.api_key = os.environ.get("OPENAI_API_KEY")
 def generate_sentence(emotion):
     messages = [
         {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": f"나는 일기장에 쓸 문장을 원해. 감정에 따라 따뜻하고 친근한 스타일의 문장을 한국어로 작성해줘 또한 감정에 대해 사용자에게 도움이 되는 말을 해줘. 인용구는 넣지 말아줘고 한문장으로 하되 20자 안으로 해줘. 감정 은 {emotion}"}  
+        {"role": "user", "content": f"나는 일기장에 쓸 문장을 원해. 감정에 따라 따뜻하고 친근한 스타일의 문장을 한국어로 작성해줘 또한 감정에 대해 사용자에게 도움이 되는 말을 해줘. 온점이 하나 있으면 그게 한문장이야. 인용구는 넣지 말아줘고 한문장으로 하되 20자 안으로 해줘. 감정 은 {emotion}"}  
    ]
     
     response = openai.ChatCompletion.create(
