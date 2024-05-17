@@ -16,6 +16,3 @@ def recommend_contents(emotion):
     recommendations_json = json.dumps(recommendations, ensure_ascii=False, indent=4)
 
     return recommendations_json
-
-emotion = "기쁨"
-print(recommend_contents(emotion))
