@@ -114,7 +114,7 @@ def predict(predict_sentence):
 def recommend_contents(emotion):
     movie = movieRecommend.fetch_movie_recommendation(emotion)
     music = musicRecommend.fetch_music_recommendation(emotion)
-    book = bookRecommend.fetch_book_recommendation()
+    book = bookRecommend.fetch_book_recommendation(emotion)
     
     recommendations = {
         "movie": movie,
